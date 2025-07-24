@@ -14,12 +14,14 @@
   </style>
 
   <!-- Archivos GeoJSON -->
-  <script type="text/javascript" src="cartagena_barrios.js"></script>
-  <script type="text/javascript" src="cartagena_zinfluencia.js"></script>
-  <script type="text/javascript" src="cartagena_inmueblesd.js"></script>
-  <script type="text/javascript" src="cartagena_aturisticas.js"></script>
-  <script type="text/javascript" src="cartagena_bibliotecas.js"></script>
-  <script type="text/javascript" src="cartagena_roads.js"></script>
+  <script src="cartagena_barrios.js"></script>
+  <script src="cartagena_zinfluencia.js"></script>
+  <script src="cartagena_inmueblesd.js"></script>
+  <script src="cartagena_aturisticas.js"></script>
+  <script src="cartagena_bibliotecas.js"></script>
+  <script src="cartagena_iglesias.js"></script>
+  <script src="cartagena_roads.js"></script>
+  <script src="cartagena_erosioncostera.js"></script>
 </head>
 
 <body>
@@ -55,9 +57,9 @@
 
     function roadStyle(feature) {
       return {
-        color: '#BEBEBE',
+        color: '#000000',
         weight: 1,
-        opacity: 0.8
+        opacity: 1
       };
     }
 
@@ -88,19 +90,47 @@
       }
     }).addTo(mimapa);
 
+    var iconoIglesia = L.icon({
+      iconUrl: 'iglesia.png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -30]
+    });
+    // Icono inmueble 
+    var iconoInmueble = L.icon({
+      iconUrl: 'inmuebles.png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -30]
+    });
+    // Icono biblioteca
+    var iconoLibro = L.icon({
+      iconUrl: 'libro.png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -30]
+    });
+
+    var iconoTurismo = L.icon({
+      iconUrl: 'pturistico.png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -30]
+    });
+
     var capa_aturisticas = L.geoJson(cartagena_aturisticas, {
       pointToLayer: function (feature, latlng) {
-        return L.marker(latlng);
+        return L.marker(latlng, { icon: iconoTurismo });
       },
       onEachFeature: function (feature, layer) {
-        var nombre = feature.properties.nombre || "Sitio turístico";
+        var nombre = feature.properties.nombre || "Sitio Turístico";
         layer.bindPopup('<b>' + nombre + '</b>');
       }
     }).addTo(mimapa);
 
     var capa_inmueblesd = L.geoJson(cartagena_inmueblesd, {
       pointToLayer: function (feature, latlng) {
-        return L.marker(latlng);
+        return L.marker(latlng, { icon: iconoInmueble});
       },
       onEachFeature: function (feature, layer) {
         var nombre = feature.properties.nombre || "Inmueble";
@@ -110,7 +140,7 @@
 
     var capa_bibliotecas = L.geoJson(cartagena_bibliotecas, {
       pointToLayer: function (feature, latlng) {
-        return L.marker(latlng);
+        return L.marker(latlng, { icon: iconoLibro });
       },
       onEachFeature: function (feature, layer) {
         var nombre = feature.properties.nombre || "Biblioteca";
@@ -118,8 +148,32 @@
       }
     }).addTo(mimapa);
 
+    var capa_iglesias = L.geoJson(cartagena_iglesias, {
+      pointToLayer: function (feature, latlng) {
+        return L.marker(latlng, { icon: iconoIglesia });
+      },
+      onEachFeature: function (feature, layer) {
+        var nombre = feature.properties.nombre || "Iglesia";
+        layer.bindPopup('<b>' + nombre + '</b>');
+      }
+    }).addTo(mimapa);
+
     var capa_roads = L.geoJson(cartagena_roads, { style: roadStyle }).addTo(mimapa);
 
+    // Nueva capa: erosión costera
+    var capa_erosioncostera = L.geoJson(cartagena_erosioncostera, {
+      style: {
+        color: '#006A89',
+        weight: 4,
+        dashArray: '4,4'
+      },
+      onEachFeature: function (feature, layer) {
+        var desc = feature.properties.descripcion || "Área con erosión costera";
+        layer.bindPopup('<b>Erosión Costera:</b> ' + desc);
+      }
+    }).addTo(mimapa);
+
+    // Capas base y superpuestas
     var capasbase = {
       "Mapa OpenStreetMap": osmMap
     };
@@ -129,8 +183,10 @@
       "Zona de Influencia": capa_zinfluencia,
       "Inmuebles Distrito": capa_inmueblesd,
       "Áreas Turísticas": capa_aturisticas,
+      "Iglesias": capa_iglesias,
       "Bibliotecas": capa_bibliotecas,
-      "Carreteras": capa_roads
+      "Carreteras": capa_roads,
+      "Erosión Costera": capa_erosioncostera
     };
 
     L.control.layers(capasbase, capasadicionales).addTo(mimapa);
